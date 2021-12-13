@@ -96,6 +96,7 @@ const Slider = () => {
         getSlides();
     }, [])
 
+    console.log(process.env.REACT_APP_API_URL)
     // Slider Functionality
     const handleClick = (direction, nItems) => {
         
