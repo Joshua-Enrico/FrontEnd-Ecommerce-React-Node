@@ -7,7 +7,7 @@ const Container = styled.div`
     flex-wrap: wrap;
     justify-content: space-between;
 `
-console.log(popularProdcts.length)
+
 const Products = () => {
     return (
         <Container>
