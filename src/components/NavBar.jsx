@@ -4,6 +4,7 @@ import {Search} from '@material-ui/icons/';
 import Badge from '@material-ui/core/Badge';
 import ShoppingCartOutlinedIcon from '@material-ui/icons/ShoppingCartOutlined';
 import { mobile } from '../../src/responsive'
+import { Link } from 'react-router-dom';
 
 const Container = styled.div`
     height: 60px;
@@ -95,7 +96,9 @@ const NavBar = () => {
                     </SearchContainer>
                 </Left>
                 <Center>
+                    <Link to='/' style={{textDecoration: 'none', color: "black"}}>
                     <Logo>GENIUS.</Logo>
+                    </Link>
                 </Center>
                 <Right>
                     <MenuItem>REGISTER</MenuItem>

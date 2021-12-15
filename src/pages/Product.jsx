@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { Add, Remove } from "@material-ui/icons";
 import styled from "styled-components";
 import Announcement from "../components/Announcement";
@@ -5,6 +6,9 @@ import Footer from "../components/Footer";
 import NavBar from "../components/NavBar";
 import Newsletter from "../components/Newsletter";
 import { mobile } from '../../src/responsive'
+import { useLocation } from "react-router";
+import { publicRequest } from '../requestMethods';
+import { colors } from '@material-ui/core';
 
 const Container = styled.div`
 
@@ -23,7 +27,7 @@ const ImageContainer = styled.div`
 `
 const Image = styled.img`
     width: 100%;
-    height: 70vh;
+    height: 40vh;
     object-fit: cover;
     ${mobile({
         height: '40vh',
@@ -117,41 +121,64 @@ const Button = styled.button`
 
 
 const Product = () => {
+    const location = useLocation()
+    const id = location.pathname.split('/')[2]
+    const [product, setProduct] = useState({})
+    const [quantity , setQuantity] = useState(1)
+
+    useEffect(() => {
+        const getProduct = async () => {
+            try {
+                const response = await publicRequest.get(`/products/find/${id}`)
+                setProduct(response.data)
+            } catch (error) {
+                console.log(error)
+            }
+        }
+        getProduct()
+    }, [id])
+
+
+    const handleQuantity = (type) => {
+        if (type === "dec") {
+           quantity > 1 && setQuantity(quantity - 1)
+        } else {
+            setQuantity(quantity + 1)
+        }
+    }
     return (
         <Container>
             <NavBar />
             <Announcement />
             <Wraper>
                 <ImageContainer>
-                    <Image src="https://i.pinimg.com/564x/c2/70/df/c270dfc996aa4e9aebbce09799422f13.jpg" />
+                    <Image src={product.img} />
                 </ImageContainer>
                 <InfoContainer>
-                    <Title>Clothes Pack</Title>
-                    <Description>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Eos, mollitia.</Description>
-                    <Price>$ 20</Price>
+                    <Title>{product.title}</Title>
+                    <Description>{product.description}</Description>
+                    <Price>$ {product.price}</Price>
                     <FilterContainer>
                         <Filter>
                             <FilterTitle>Colors</FilterTitle>
-                            <FilterColor color="black"/>
-                            <FilterColor color="darkblue"/>
-                            <FilterColor color="gray"/>
+                            {product.color?.map((color) => (
+                                <FilterColor color={color} key={color}/>
+                            ))}
                         </Filter>
                         <Filter>
                             <FilterTitle>Size</FilterTitle>
                             <FilterSize>
-                                <FilterSizeOption>XS</FilterSizeOption>
-                                <FilterSizeOption>S</FilterSizeOption>
-                                <FilterSizeOption>M</FilterSizeOption>
-                                <FilterSizeOption>L</FilterSizeOption>
-                                <FilterSizeOption>XL</FilterSizeOption>
+                                {product.size?.map((size) => (
+                                    <FilterSizeOption key={size}>{size}</FilterSizeOption>
+                                ))}
                             </FilterSize>
                         </Filter>
                     </FilterContainer>
                     <AddContainer>
                         <AmountContainer>
-                            <Remove/>
-                            <Amount>1</Amount>
-                            <Add/>
+                            <Remove cursor="pointer" onClick={() => handleQuantity("dec")} />
+                            <Amount>{quantity}</Amount>
+                            <Add cursor="pointer" onClick={() => handleQuantity("inc")}/>
                         </AmountContainer>
                         <Button>ADD TO CART</Button>
                     </AddContainer>

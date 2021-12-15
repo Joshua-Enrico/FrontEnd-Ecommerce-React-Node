@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import styled from "styled-components"
 import Announcement from "../components/Announcement"
 import Footer from "../components/Footer"
@@ -49,18 +49,17 @@ const Option = styled.option`
 const ProductList = () => {
     const location = useLocation()
     const category = location.pathname.split('/')[2]
-    const [filter, setFilter] = useState({})
+    const [filters, setFilters] = useState({})
     const [sort, setSort] = useState("newest")
 
 
     const handleFilters = (e) => {
         const value = e.target.value;
-        setFilter({
-            ...filter,
+        setFilters({
+            ...filters,
             [e.target.name]: value,
         })
     }
-    console.log(filter)
     return (
         <Container>
             <NavBar />
@@ -100,7 +99,10 @@ const ProductList = () => {
                         </Select>
                 </Filter>
             </FilterContainer>
-            <Products />
+            <Products 
+            category={category}
+            filters={filters}
+            sort={sort}/>
             <Newsletter />
             <Footer />
         </Container>
