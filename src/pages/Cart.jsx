@@ -3,7 +3,8 @@ import styled from "styled-components";
 import Announcement from "../components/Announcement";
 import Footer from "../components/Footer";
 import NavBar from "../components/NavBar";
-import { mobile } from '../../src/responsive'
+import { mobile } from '../responsive'
+import { useSelector } from "react-redux"
 const Container = styled.div`
 
 `
@@ -161,6 +162,8 @@ const Button = styled.button`
 
 
 const Cart = () => {
+    const cart = useSelector(state=>state.cart)
+    console.log(cart)
     return (
         <Container>
             <NavBar />
