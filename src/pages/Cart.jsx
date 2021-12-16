@@ -5,11 +5,19 @@ import Footer from "../components/Footer";
 import NavBar from "../components/NavBar";
 import { mobile } from '../responsive'
 import { useSelector } from "react-redux"
+import StripeCheckout from 'react-stripe-checkout';
+import { useState, useEffect } from "react";
+import { userRequest } from "../requestMethods";
+import { useNavigate } from "react-router";
+
+const KEY = process.env.REACT_APP_KEY
+
 const Container = styled.div`
 
 `
 const Wrapper = styled.div`
     padding: 20px;
+    margin-top: 20px;
     ${mobile({
     padding: '10px',
 })}
@@ -36,8 +44,8 @@ const TopButtom = styled.button`
 `
 const TopTexts = styled.div`
     ${mobile({
-        display: 'none',
-    })}
+    display: 'none',
+})}
 `
 
 const TopText = styled.span`
@@ -50,8 +58,8 @@ const Bottom = styled.div`
     display: flex;
     justify-content: space-between;
     ${mobile({
-        flexDirection: 'column',
-    })}
+    flexDirection: 'column',
+})}
 `
 const Hr = styled.hr`
     background-color: #eee;
@@ -69,8 +77,8 @@ const Product = styled.div`
     padding-top: 10px;
     padding-bottom: 10px;
     ${mobile({
-        flexDirection: 'column',
-    })}
+    flexDirection: 'column',
+})}
 `
 const ProductDetail = styled.div`
     flex: 2;
@@ -115,15 +123,15 @@ const ProductAmount = styled.div`
     font-size: 24px;
     margin: 5px;
     ${mobile({
-        margin: '5px 15px',
-    })}
+    margin: '5px 15px',
+})}
 `
 const ProductPrice = styled.div`
     font-size: 30px;
     font-weight: 200;
     ${mobile({
-        marginBottom: '20px',
-    })}
+    marginBottom: '20px',
+})}
 `
 const Summary = styled.div`
     flex: 1;
@@ -162,8 +170,36 @@ const Button = styled.button`
 
 
 const Cart = () => {
-    const cart = useSelector(state=>state.cart)
-    console.log(cart)
+
+    const [stripeToken, setStripeToken] = useState(null)
+    const history = useNavigate()
+
+    const onToken = (token) => {
+        setStripeToken(token)
+    }
+    const cart = useSelector(state => state.cart)
+
+    useEffect(() => {
+        const makeRequest = async () => {
+            try {
+                const res = await userRequest.post("/checkout/payment", {
+                    tokenId: stripeToken.id,
+                    amount: cart.total * 100
+
+                });
+                history('/success', {
+                    state: {
+                        stripeData: res.data.success,
+                        prodcuts: cart
+                    }
+                })
+            } catch (error) {
+                console.log(error)
+            }
+        }
+        stripeToken && cart.total >= 1 && makeRequest()
+    }, [stripeToken, cart.total, history])
+
     return (
         <Container>
             <NavBar />
@@ -173,58 +209,41 @@ const Cart = () => {
                 <Top>
                     <TopButtom>CONTINUE SHOPPING</TopButtom>
                     <TopTexts>
-                        <TopText>Shopping Bag(2)</TopText>
+                        <TopText>Shopping Bag({cart.quantity})</TopText>
                         <TopText>Your WishList</TopText>
                     </TopTexts>
                     <TopButtom type="filled">CHECKOUT NOW</TopButtom>
                 </Top>
                 <Bottom>
                     <Info>
-                        <Product>
-                            <ProductDetail>
-                                <Image src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" />
-                                <Details>
-                                    <ProductName><b>Product:</b>Product name</ProductName>
-                                    <ProductId><b>ID:</b> 999923232</ProductId>
-                                    <ProductColor color="black" />
-                                    <ProductSize><b>Size:</b> 37.5</ProductSize>
-                                </Details>
-                            </ProductDetail>
-                            <PriceDetail>
-                                <ProductAmountContainer>
-                                    <Add />
-                                    <ProductAmount>2</ProductAmount>
-                                    <Remove />
-                                </ProductAmountContainer>
-                                <ProductPrice>$ 30</ProductPrice>
-                            </PriceDetail>
-                        </Product>
+                        {cart.products.map(product => (
+                            <Product>
+                                <ProductDetail>
+                                    <Image src={product.img} />
+                                    <Details>
+                                        <ProductName><b>Product:</b>{product.title}</ProductName>
+                                        <ProductId><b>ID:</b> {product._id}</ProductId>
+                                        <ProductColor color={product?.color} />
+                                        <ProductSize><b>Size:</b> {product?.size}</ProductSize>
+                                    </Details>
+                                </ProductDetail>
+                                <PriceDetail>
+                                    <ProductAmountContainer>
+                                        <Add />
+                                        <ProductAmount>{product.quantity}</ProductAmount>
+                                        <Remove />
+                                    </ProductAmountContainer>
+                                    <ProductPrice>$ {product.price * product.quantity}</ProductPrice>
+                                </PriceDetail>
+                            </Product>
+                        ))}
                         <Hr />
-                        <Product>
-                            <ProductDetail>
-                                <Image src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" />
-                                <Details>
-                                    <ProductName><b>Product:</b>Product name</ProductName>
-                                    <ProductId><b>ID:</b> 999923232</ProductId>
-                                    <ProductColor color="black" />
-                                    <ProductSize><b>Size:</b> 37.5</ProductSize>
-                                </Details>
-                            </ProductDetail>
-                            <PriceDetail>
-                                <ProductAmountContainer>
-                                    <Add />
-                                    <ProductAmount>2</ProductAmount>
-                                    <Remove />
-                                </ProductAmountContainer>
-                                <ProductPrice>$ 30</ProductPrice>
-                            </PriceDetail>
-                        </Product>
                     </Info>
                     <Summary>
                         <SummaryTitle>ORDER SUMMARY</SummaryTitle>
                         <SummaryItem>
                             <SummaryItemText>Subtotal</SummaryItemText>
-                            <SummaryItemPrice>$ 80</SummaryItemPrice>
+                            <SummaryItemPrice>$ {cart?.total}</SummaryItemPrice>
 
                         </SummaryItem>
                         <SummaryItem>
@@ -239,10 +258,20 @@ const Cart = () => {
                         </SummaryItem>
                         <SummaryItem type="total">
                             <SummaryItemText >Total</SummaryItemText>
-                            <SummaryItemPrice>$ 80</SummaryItemPrice>
+                            <SummaryItemPrice>$ {cart?.total}</SummaryItemPrice>
 
                         </SummaryItem>
-                        <Button>Checkout Now</Button>
+                        <StripeCheckout
+                            name="Genius Shop"
+                            billingAddress
+                            shippingAddress
+                            description={`Your total is $${cart?.total}`}
+                            amount={cart?.total * 100}
+                            token={onToken}
+                            stripeKey={KEY}
+                        >
+                            <Button>PAY NOW</Button>
+                        </StripeCheckout>
                     </Summary>
                 </Bottom>
             </Wrapper>

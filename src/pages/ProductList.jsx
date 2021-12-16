@@ -8,10 +8,9 @@ import Products from "../components/Products"
 import { mobile } from '../../src/responsive'
 import { useLocation } from "react-router"
 const Container = styled.div`
-
 `
 const Title = styled.h1`
-    margin: 20px;
+    margin: 30px;
 `
 const FilterContainer = styled.div`
     display: flex;
