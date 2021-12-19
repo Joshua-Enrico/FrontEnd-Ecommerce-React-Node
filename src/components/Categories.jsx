@@ -10,6 +10,7 @@ const Container = styled.div`
     ${mobile({
         padding: "0px",
         flexDirection: "column",
+        paddingTop: "80px"
     })}
 `;
 
