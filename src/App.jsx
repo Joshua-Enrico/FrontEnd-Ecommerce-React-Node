@@ -11,9 +11,10 @@ import {
   Route,
   Navigate
 } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const App = () => {
-  const user = true;
+  const user = useSelector(state => state.user.currentUser);
   return <Router>
             <Routes>
               <Route exact path="/" element={<Home />} />
@@ -21,7 +22,7 @@ const App = () => {
               <Route path="/product/:id" element={<Product />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/login" element={user ? <Navigate to="/"/> : <Login/>} />
-              <Route path="/register" element={user ? <Navigate to="/"/> : <Register/>} />
+              <Route path="/register" element={user ? <Navigate to="/"/> : <Register />} />
               <Route path="/success" element={<Success />} />
 
             </Routes>

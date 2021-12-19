@@ -1,5 +1,8 @@
 import styled from "styled-components";
+import { useState } from "react";
 import { mobile } from '../../src/responsive'
+import { useDispatch, useSelector } from "react-redux";
+import { register } from "../redux/apiCalls";
 const Container = styled.div`
     width: 100vw;
     height: 100vh;
@@ -46,23 +49,45 @@ const Button = styled.button`
     cursor: pointer;
     border-radius: 10px;
 `
+const Error = styled.span`
+    color: red;
+`
 
 const Register = () => {
+    const [name, setName] = useState('');
+    const [lastname, setLastname] = useState('');
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmpas, setConfirmpas] = useState('');
+    const [email, setEmail] = useState('');
+
+    const dispatch = useDispatch();
+    const {isFetching, error} = useSelector((state) => state.user)
+
+    const handleRegister = (e) => {
+        e.preventDefault();
+        if (password !== confirmpas) {
+            alert("Password not match");
+        } else {
+            register(dispatch, {name, lastname, username, password, email});
+        }
+    }
     return (
         <Container>
             <Wraper>
                 <Title>CREATE AN ACOUNT</Title>
                 <Form>
-                    <Input placeholder="name" />
-                    <Input placeholder="lastname" />
-                    <Input placeholder="email" />
-                    <Input placeholder="username" />
-                    <Input placeholder="password" />
-                    <Input placeholder="confirm pasword" />
+                    <Input placeholder="name" onChange={(e) => setName(e.target.value)}/>
+                    <Input placeholder="lastname" onChange={(e) => setLastname(e.target.value)  }/>
+                    <Input placeholder="email" onChange={(e) => setEmail(e.target.value)  }/>
+                    <Input placeholder="username" onChange={(e) => setUsername(e.target.value)  }/>
+                    <Input placeholder="password" onChange={(e) => setPassword(e.target.value)  }/>
+                    <Input placeholder="confirm pasword" onChange={(e) => setConfirmpas(e.target.value)  }/>
                     <Agreement>
                         Lorem ipsum dolor sit amet consectetur, adipisicing elit. Corporis, eius!
                     </Agreement>
-                    <Button>CREATE</Button>
+                    <Button onClick={handleRegister} disabled={isFetching}>CREATE</Button>
+                    {error && <Error>Something Went Wrong</Error>}
                 </Form>
             </Wraper>
         </Container>
