@@ -9,7 +9,10 @@ import { mobile } from '../../src/responsive'
 import { useLocation } from "react-router";
 import { publicRequest } from '../requestMethods';
 import { addProduct } from "../redux/cartRedux"
-import { useDispatch } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.min.css';
+import { Zoom } from 'react-toastify';
 
 const Container = styled.div`
 
@@ -19,9 +22,9 @@ const Wraper = styled.div`
     display: flex;
     margin-top: 20px;
     ${mobile({
-        padding: '10px',
-        flexDirection: 'column',
-    })}
+    padding: '10px',
+    flexDirection: 'column',
+})}
 `
 const ImageContainer = styled.div`
     flex: 1;
@@ -32,15 +35,15 @@ const Image = styled.img`
     height: 40vh;
     object-fit: cover;
     ${mobile({
-        height: '40vh',
-    })}
+    height: '40vh',
+})}
 `
 const InfoContainer = styled.div`
     flex: 1;
     padding: 0px 50px;
     ${mobile({
-        padding: '10px',
-    })}
+    padding: '10px',
+})}
 `
 const Title = styled.h1`
     font-weight: 200;
@@ -58,8 +61,8 @@ const FilterContainer = styled.div`
     display: flex;
     justify-content: space-between;
     ${mobile({
-        width: '100%',
-    })}
+    width: '100%',
+})}
 `
 const Filter = styled.div`
     display: flex;
@@ -90,8 +93,8 @@ const AddContainer = styled.div`
     align-items: center;
     justify-content: space-between;
     ${mobile({
-        width: '100%',
-    })}
+    width: '100%',
+})}
 `
 const AmountContainer = styled.div`
     display: flex;
@@ -120,15 +123,27 @@ const Button = styled.button`
     }
 `
 
+const Error = styled.span`
+    color: red;
+`
+const PopUp = styled.div`
+    display: flex;
+    justify-content: space-around;
+`
+const DescriptionPopup = styled.div`
+    display: column;
+`
+
 
 
 const Product = () => {
     const location = useLocation()
     const id = location.pathname.split('/')[2]
     const [product, setProduct] = useState({})
-    const [quantity , setQuantity] = useState(1)
-    const [color , setColor] = useState("")
-    const [size , setSize] = useState("")
+    const [quantity, setQuantity] = useState(1)
+    const [color, setColor] = useState("")
+    const [size, setSize] = useState("")
+    const [maxLimit, setMaxLimit] = useState("")
     const dispatch = useDispatch()
 
     useEffect(() => {
@@ -140,21 +155,66 @@ const Product = () => {
                 console.log(error)
             }
         }
-        window.scrollTo(0,0)
+        window.scrollTo(0, 0)
         getProduct()
     }, [id])
 
+    //Handle qty of products
     const handleQuantity = (type) => {
         if (type === "dec") {
-           quantity > 1 && setQuantity(quantity - 1)
+            quantity > 1 && setQuantity(quantity - 1)
         } else {
-          quantity < product.amount && setQuantity(quantity + 1)
+            quantity < product.amount && setQuantity(quantity + 1)
         }
     }
-    const handleClick = () => {
-        dispatch(addProduct({ ...product, quantity, color, size }));
-    }
 
+
+    // Pop Up Checkout
+    const Msg = ({ closeToast, toastProps }) => (
+        <div className='popup__Item'>
+            <PopUp>
+                <img className='popup__Image' alt='' width={"20%"} src={product.img} />
+                <DescriptionPopup>
+                    <p>{product.title}</p>
+                    <p>qty: {quantity}</p>
+                </DescriptionPopup>
+            </PopUp>
+        </div>
+    )
+
+    const cart = useSelector(state => state.cart.products)
+    const handleClick = () => {
+        let qty = 0;
+        cart.forEach((item) => {
+            if (item._id === id) {
+                qty += item.quantity;
+            }
+        })
+        console.log(qty);
+        if (qty < product.amount) {
+            if (quantity <= product.amount - qty) {
+                dispatch(addProduct({ ...product, quantity, color, size }));
+                toast.configure();
+                console.log(toast)
+                toast(<Msg />, {
+                    position: "top-right",
+                    autoClose: 5000,
+                    transition: Zoom,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: false,
+                    progress: undefined,
+                });
+                setMaxLimit("");
+            } else {
+                setMaxLimit("Allowed Quantity " + (product.amount - qty))
+            }
+            // dispatch(addProduct({ ...product, quantity, color, size }));
+        } else {
+            setMaxLimit("You pick all the stock")
+        }
+    }
     return (
         <Container>
             <NavBar />
@@ -164,17 +224,17 @@ const Product = () => {
                     <Image src={product.img} />
                 </ImageContainer>
                 <InfoContainer>
-                    <Title>{product.title}</Title>
+                    <Title>{product.title} - Stock({product.amount})</Title>
                     <Description>{product.description}</Description>
                     <Price>$ {product.price}</Price>
                     <FilterContainer>
                         <Filter>
                             <FilterTitle>Colors</FilterTitle>
                             {product.color?.map((color) => (
-                                <FilterColor 
-                                color={color}
-                                key={color}
-                                onClick={() => setColor(color)}/>
+                                <FilterColor
+                                    color={color}
+                                    key={color}
+                                    onClick={() => setColor(color)} />
                             ))}
                         </Filter>
                         <Filter>
@@ -190,10 +250,11 @@ const Product = () => {
                         <AmountContainer>
                             <Remove cursor="pointer" onClick={() => handleQuantity("dec")} />
                             <Amount>{quantity}</Amount>
-                            <Add cursor="pointer" onClick={() => handleQuantity("inc")}/>
+                            <Add cursor="pointer" onClick={() => handleQuantity("inc")} />
                         </AmountContainer>
                         <Button onClick={handleClick}>ADD TO CART</Button>
                     </AddContainer>
+                    {maxLimit && <Error>{maxLimit}</Error>}
                 </InfoContainer>
             </Wraper>
             <Newsletter />

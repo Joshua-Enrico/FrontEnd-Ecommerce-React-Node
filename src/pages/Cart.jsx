@@ -1,4 +1,4 @@
-import { Add, Remove } from "@material-ui/icons";
+import { Add, Remove, Cancel } from "@material-ui/icons";
 import styled from "styled-components";
 import Announcement from "../components/Announcement";
 import Footer from "../components/Footer";
@@ -9,6 +9,9 @@ import StripeCheckout from 'react-stripe-checkout';
 import { useState, useEffect } from "react";
 import { userRequest } from "../requestMethods";
 import { useNavigate } from "react-router";
+import { removeProduct } from "../redux/cartRedux"
+import { useDispatch } from "react-redux"
+
 
 const KEY = process.env.REACT_APP_KEY
 
@@ -86,12 +89,18 @@ const ProductDetail = styled.div`
 `
 const Image = styled.img`
     width: 200px;
+    ${mobile({
+        width: '150px',
+    })}
 `
 const Details = styled.div`
     padding: 20px;
     display: flex;
     flex-direction: column;
     justify-content: space-around;
+    ${mobile({
+        fontSize: '70%',
+    })}
 `
 
 const ProductName = styled.span`
@@ -166,6 +175,15 @@ const Button = styled.button`
     font-weight: 600;
 
 `
+const Button2 = styled.button`
+    width: 10%;
+    height: 10%;
+    background-color: black;
+    color: white;
+    border-radius: 50%;
+    cursor: pointer;
+
+`
 
 
 
@@ -200,6 +218,11 @@ const Cart = () => {
         stripeToken && cart.total >= 1 && makeRequest()
     }, [stripeToken, cart.total, history])
 
+    const dispatch = useDispatch()
+    const handleRemove = (index) => {
+        dispatch(removeProduct(index))
+    }
+    console.log(cart)
     return (
         <Container>
             <NavBar />
@@ -216,15 +239,15 @@ const Cart = () => {
                 </Top>
                 <Bottom>
                     <Info>
-                        {cart.products.map(product => (
+                        {cart.products.map((product, index) => (
                             <Product>
                                 <ProductDetail>
                                     <Image src={product.img} />
                                     <Details>
                                         <ProductName><b>Product:</b>{product.title}</ProductName>
                                         <ProductId><b>ID:</b> {product._id}</ProductId>
-                                        <ProductColor color={product?.color} />
-                                        <ProductSize><b>Size:</b> {product?.size}</ProductSize>
+                                        <ProductColor color={product.color} />
+                                        <ProductSize><b>Size:</b> {product.size}</ProductSize>
                                     </Details>
                                 </ProductDetail>
                                 <PriceDetail>
@@ -234,6 +257,7 @@ const Cart = () => {
                                         <Remove />
                                     </ProductAmountContainer>
                                     <ProductPrice>$ {product.price * product.quantity}</ProductPrice>
+                                    <Cancel cursor="pointer" onClick={() => handleRemove(index) }/>
                                 </PriceDetail>
                             </Product>
                         ))}
