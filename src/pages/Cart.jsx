@@ -11,7 +11,8 @@ import { userRequest } from "../requestMethods";
 import { useNavigate } from "react-router";
 import { removeProduct } from "../redux/cartRedux"
 import { useDispatch } from "react-redux"
-
+import Popup from 'reactjs-popup';
+import 'reactjs-popup/dist/index.css';
 
 const KEY = process.env.REACT_APP_KEY
 
@@ -90,8 +91,8 @@ const ProductDetail = styled.div`
 const Image = styled.img`
     width: 200px;
     ${mobile({
-        width: '150px',
-    })}
+    width: '150px',
+})}
 `
 const Details = styled.div`
     padding: 20px;
@@ -99,8 +100,8 @@ const Details = styled.div`
     flex-direction: column;
     justify-content: space-around;
     ${mobile({
-        fontSize: '70%',
-    })}
+    fontSize: '70%',
+})}
 `
 
 const ProductName = styled.span`
@@ -175,15 +176,6 @@ const Button = styled.button`
     font-weight: 600;
 
 `
-const Button2 = styled.button`
-    width: 10%;
-    height: 10%;
-    background-color: black;
-    color: white;
-    border-radius: 50%;
-    cursor: pointer;
-
-`
 
 
 
@@ -196,6 +188,7 @@ const Cart = () => {
         setStripeToken(token)
     }
     const cart = useSelector(state => state.cart)
+    const currentUser = useSelector((state) => state.user.currentUser)
 
     useEffect(() => {
         const makeRequest = async () => {
@@ -208,7 +201,7 @@ const Cart = () => {
                 history('/success', {
                     state: {
                         stripeData: res.data.success,
-                        prodcuts: cart
+                        products: cart
                     }
                 })
             } catch (error) {
@@ -222,7 +215,7 @@ const Cart = () => {
     const handleRemove = (index) => {
         dispatch(removeProduct(index))
     }
-    console.log(cart)
+
     return (
         <Container>
             <NavBar />
@@ -257,7 +250,7 @@ const Cart = () => {
                                         <Remove />
                                     </ProductAmountContainer>
                                     <ProductPrice>$ {product.price * product.quantity}</ProductPrice>
-                                    <Cancel cursor="pointer" onClick={() => handleRemove(index) }/>
+                                    <Cancel cursor="pointer" onClick={() => handleRemove(index)} />
                                 </PriceDetail>
                             </Product>
                         ))}
@@ -285,7 +278,7 @@ const Cart = () => {
                             <SummaryItemPrice>$ {cart?.total}</SummaryItemPrice>
 
                         </SummaryItem>
-                        <StripeCheckout
+                        {currentUser ? <StripeCheckout
                             name="Genius Shop"
                             billingAddress
                             shippingAddress
@@ -295,7 +288,10 @@ const Cart = () => {
                             stripeKey={KEY}
                         >
                             <Button>PAY NOW</Button>
-                        </StripeCheckout>
+
+                        </StripeCheckout> : <Popup trigger={<Button >PAY NOW</Button>} position="bottom center">
+                            <div>Login Or SignUp First</div>
+                        </Popup>}
                     </Summary>
                 </Bottom>
             </Wrapper>

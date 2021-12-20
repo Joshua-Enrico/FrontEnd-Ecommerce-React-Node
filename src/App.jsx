@@ -5,6 +5,7 @@ import Product from "./pages/Product";
 import ProductList from "./pages/ProductList";
 import Register from "./pages/Register";
 import Success from "./pages/Success";
+import UserToken from "./globalVar"
 import {
   BrowserRouter as Router,
   Routes,
@@ -14,7 +15,9 @@ import {
 import { useSelector } from "react-redux";
 
 const App = () => {
+  const Token = useSelector((state) => state.user.currentUser?.accessToken)
   const user = useSelector(state => state.user.currentUser);
+  UserToken.token = Token
   return <Router>
             <Routes>
               <Route exact path="/" element={<Home />} />
